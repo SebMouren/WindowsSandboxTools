@@ -19,7 +19,7 @@ Function New-WsbConfiguration {
         [String]$VideoInput = "Default",
 
         [Parameter(ValueFromPipelineByPropertyName)]
-        [ValidateSet("Default", "Disable")]
+        [ValidateSet("Default", "Enable", "Disable")]
         [String]$ClipboardRedirection = "Default",
 
         [Parameter(ValueFromPipelineByPropertyName)]
@@ -27,7 +27,7 @@ Function New-WsbConfiguration {
         [String]$PrinterRedirection = "Default",
 
         [Parameter(ValueFromPipelineByPropertyName)]
-        [ValidateSet("Default", "Disable")]
+        [ValidateSet("Default", "Enable", "Disable")]
         [String]$Networking = "Default",
 
         [Parameter(ValueFromPipelineByPropertyName)]
