@@ -6,7 +6,7 @@ Function Start-WindowsSandbox {
     Param(
         [Parameter(Position = 0, Mandatory, ParameterSetName = "config", HelpMessage = "Specify the path to a wsb file.")]
         [ValidateScript( { Test-Path $_ })]
-        [ArgumentCompleter( { if (Test-Path $global:wsbConfigPath) { (Get-ChildItem $Global:wsbConfigPath).FullName } })]
+        [ArgumentCompleter( { if (Test-Path $global:wsbConfigPath) { (Get-ChildItem $Global:wsbConfigPath -File -Recurse -Filter "*.wsb").FullName } })]
         [String]$Configuration,
 
         [Parameter(ParameterSetName = "normal", HelpMessage = "Start with no customizations.")]
