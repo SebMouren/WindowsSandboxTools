@@ -6,7 +6,7 @@ Function Start-WindowsSandbox {
     Param(
         [Parameter(Position = 0, Mandatory, ParameterSetName = "config", HelpMessage = "Specify the path to a wsb file.")]
         [ValidateScript( { Test-Path $_ })]
-        [ArgumentCompleter( { if (Test-Path $global:wsbConfigPath) { (Get-ChildItem $Global:wsbConfigPath).FullName } })]
+        [ArgumentCompleter( { ConfigFileArgumentCompleter @args } )]
         [String]$Configuration,
 
         [Parameter(ParameterSetName = "normal", HelpMessage = "Start with no customizations.")]
@@ -96,4 +96,24 @@ Function Start-WindowsSandbox {
     Write-Verbose "[$((Get-Date).TimeOfDay)] Ending $($MyInvocation.MyCommand)."
 
     Write-Host "[$((Get-Date).TimeOfDay)] Windows Sandbox has been launched. You may need to wait for any configurations to complete." -ForegroundColor green
+}
+
+#8
+Function ConfigFileArgumentCompleter {
+    param ( $commandName,
+        $parameterName,
+        $wordToComplete,
+        $commandAst,
+        $fakeBoundParameters )
+    #a set of arguments for file and directory search
+    $fileFilterCompleterArgs = @{ Filter = "*.wsb"; Recurse = $true; Depth = 2; File = $true; ErrorAction = 'SilentlyContinue' }
+    $directoryCompleterArgs = @{ Directory = $true; ErrorAction = 'SilentlyContinue' }
+    #Current interractively typed path search has precedence over the module configuration files path
+    $files = $wordToComplete, $global:wsbConfigPath  | Resolve-Path -ErrorAction SilentlyContinue | Get-ChildItem @fileFilterCompleterArgs
+    $directories = $wordToComplete, $global:wsbConfigPath  | Resolve-Path -ErrorAction SilentlyContinue | Get-ChildItem @directoryCompleterArgs
+    if ($null -eq $files) {
+        return $directories.FullName
+    } else {
+        return $files.FullName + $directories.FullName
+    }
 }
