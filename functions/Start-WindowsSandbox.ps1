@@ -5,7 +5,7 @@ Function Start-WindowsSandbox {
 
     Param(
         [Parameter(Position = 0, Mandatory, ParameterSetName = "config", HelpMessage = "Specify the path to a wsb file.")]
-        [ValidateScript( { Test-Path $_ })]
+        [ValidateScript( { Test-Path $_ -PathType Leaf })]
         [ArgumentCompleter( { ConfigFileArgumentCompleter @args } )]
         [String]$Configuration,
 
@@ -105,15 +105,15 @@ Function ConfigFileArgumentCompleter {
         $wordToComplete,
         $commandAst,
         $fakeBoundParameters )
-    #a set of arguments for file and directory search
-    $fileFilterCompleterArgs = @{ Filter = "*.wsb"; Recurse = $true; Depth = 2; File = $true; ErrorAction = 'SilentlyContinue' }
-    $directoryCompleterArgs = @{ Directory = $true; ErrorAction = 'SilentlyContinue' }
-    #Current interractively typed path search has precedence over the module configuration files path
-    $files = $wordToComplete, $global:wsbConfigPath  | Resolve-Path -ErrorAction SilentlyContinue | Get-ChildItem @fileFilterCompleterArgs
-    $directories = $wordToComplete, $global:wsbConfigPath  | Resolve-Path -ErrorAction SilentlyContinue | Get-ChildItem @directoryCompleterArgs
-    if ($null -eq $files) {
-        return $directories.FullName
-    } else {
-        return $files.FullName + $directories.FullName
+        $fileFilterCompleterArgs = @{ Filter = "*.wsb"; Recurse = $true; Depth = 2; File = $true }
+        $directoryCompleterArgs = @{ Directory = $true }
+        $silenceErrorArg = @{ ErrorAction = 'SilentlyContinue' }
+        if (!(Test-Path -Path $wordToComplete @silenceErrorArg)) { $wordToComplete+="*" }
+        $files = $wordToComplete, $global:wsbConfigPath  | Resolve-Path @silenceErrorArg | Get-ChildItem @fileFilterCompleterArgs @silenceErrorArg
+        $directories = $wordToComplete, $global:wsbConfigPath  | Resolve-Path @silenceErrorArg | Get-ChildItem @directoryCompleterArgs @silenceErrorArg
+        if ($null -eq $files) {
+            return $directories.FullName | ForEach-Object {"'$_'"}
+        } else {
+            return ($files.FullName + $directories.FullName) | ForEach-Object {"'$_'"}
+        }
     }
-}
